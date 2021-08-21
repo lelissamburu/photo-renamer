@@ -31,7 +31,6 @@ import (
 
 	"github.com/rwcarlsen/goexif/exif"
 	"github.com/spf13/cobra"
-	"github.com/yorch/photo-renamer/utils"
 )
 
 var counter int = 0
@@ -58,7 +57,7 @@ func visit(pathname string, info os.FileInfo, err error) error {
 
 		currentFilename := info.Name()
 		exifDatetime, _ := exifData.DateTime()
-		formattedDatetime := exifDatetime.Format("20060102150405")
+		formattedDatetime := exifDatetime.Format("2006-01-02-150405")
 		newPathname, err := findAvailablePathname(pathname, currentFilename, formattedDatetime)
 
 		if err != nil {
@@ -81,6 +80,11 @@ func findAvailablePathname(pathname string, currentFilename string, formattedDat
 		if currentFilename == newFilename {
 			return "", errors.New("! File already renamed: " + pathname)
 		}
+
+		if formattedDatetime == "0001-01-01-000000" {
+			return "", errors.New("! No change filename: " + pathname)
+		}
+
 		if count > 0 {
 			newFilename = fmt.Sprintf("%s-%v%s", formattedDatetime, count, path.Ext(pathname))
 		}
@@ -101,25 +105,21 @@ func renamer(cmd *cobra.Command, args []string) {
 	fmt.Println()
 
 	directory := args[0]
-	fmt.Printf("Will rename images in directory '%s', continue? (yes/no)\n", directory)
 
-	if utils.AskForConfirmation() {
-		startTime := time.Now()
+	startTime := time.Now()
 
-		filepath.Walk(directory, visit)
+	filepath.Walk(directory, visit)
 
-		fmt.Println()
-		fmt.Println()
-		endTime := time.Now()
-		duration := endTime.Sub(startTime)
-		if counter == 0 {
-			fmt.Printf("¯\\_(ツ)_/¯ Could not renamed any photo in %s\n", duration)
-		} else {
-			fmt.Printf("ʕ◔ϖ◔ʔ I successfully renamed %d photos in %s\n", counter, duration)
-		}
+	fmt.Println()
+	fmt.Println()
+	endTime := time.Now()
+	duration := endTime.Sub(startTime)
+	if counter == 0 {
+		fmt.Printf("¯\\_(ツ)_/¯ Could not renamed any photo in %s\n", duration)
 	} else {
-		fmt.Printf("Cancelled")
+		fmt.Printf("ʕ◔ϖ◔ʔ I successfully renamed %d photos in %s\n", counter, duration)
 	}
+
 	fmt.Println()
 }
 

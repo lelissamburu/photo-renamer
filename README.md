@@ -40,7 +40,7 @@ docker build . -t photo-renamer
 And to run it:
 
 ```sh
-docker run -it -v `pwd`/temp:/photos photo-renamer /photos
+docker run -it --rm --name photo-renamer -v C:\path\to\photos:/photos photo-renamer /photos
 ```
 
 ## Build
